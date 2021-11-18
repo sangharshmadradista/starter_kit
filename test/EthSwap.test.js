@@ -8,9 +8,10 @@ require('chai')
     .should()
 
 contract ('EthSwap Contract',  () => {
-    let ethSwapContract
+    let ethSwapContract, tokenContract
     before( async () => {
-    ethSwapContract = await EthSwap.new()
+    tokenContract = await Token.new()
+    ethSwapContract = await EthSwap.new(tokenContract.address)
     })
   it ('is not null', async () => {
       assert.isNotNull(ethSwapContract)
