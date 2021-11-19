@@ -22,14 +22,17 @@ contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will 
       assert.equal(contractName, 'Eth Swap Finance')
   })
   describe ('buyToken()', async () => {
-    it ("valid amount of token purchased", async () => {
-        let etherCount = '10'
-        let dappCount = etherCount * 100 // one ether is 100 DAppToken
+      let etherCount, dappCount
+     before (async () => {
+        etherCount = '1'
+        dappCount = etherCount * 100 // one ether is 100 DAppToken
         /*
             from: msg.sender
             value: msg.value 
          */
-        await ethSwapContract.buyToken({from: sameer, value: web3.utils.toWei(etherCount,'ether')})
+        await ethSwapContract.buyToken({from: sameer, value: web3.utils.toWei(etherCount,'ether')})        
+     }) 
+    it ("valid amount of token purchased", async () => {
         let currentDAppToken = await tokenContract.balanceOf(sameer)
         currentDAppToken = currentDAppToken.toString()
         assert.equal(currentDAppToken , web3.utils.toWei(dappCount.toString(),'ether'))
