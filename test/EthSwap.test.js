@@ -23,8 +23,8 @@ contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will 
       const contractName =  await ethSwapContract.name()
       assert.equal(contractName, 'Eth Swap Finance')
   })
-  describe ('buyToken(): Purchsed DApp token from EthSwap contract with Ether ', async () => {
-      let etherCount, dappCountPerEth, initalDappCount
+  describe ('function buyToken(): to purchase DApp token from EthSwap Contract with Ether ', async () => {
+      let etherCount, dappCountPerEth, initalDappCount,eventEmitted
      before (async () => {
         etherCount = '1'
         dappCountPerEth = etherCount * 100 // one ether is 100 DAppToken
@@ -33,20 +33,27 @@ contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will 
             from: msg.sender
             value: msg.value 
          */
-        await ethSwapContract.buyToken({from: sameer, value: web3.utils.toWei(etherCount,'ether')})        
+        eventEmitted = await ethSwapContract.buyToken({from: sameer, value: web3.utils.toWei(etherCount,'ether')})        
      }) 
-    it ("valid amount of DApptoken purchased", async () => {
+    it ("has valid amount of DApptoken after purchase", async () => {
         let currentDAppToken = await tokenContract.balanceOf(sameer)
         currentDAppToken = currentDAppToken.toString()
         assert.equal(currentDAppToken , web3.utils.toWei(dappCountPerEth.toString(),'ether'))
     })
-    it ("valid amount of DApptoken reduced from EthSWap contract", async () => {
+    it ("has valid amount of DApptoken reduced from EthSWap contract after the purchase", async () => {
         let tokenCount = await tokenContract.balanceOf(ethSwapContract.address)
         assert.equal(tokenCount.toString(), tokens('999900'))
     })
-    it ("valid amount of Eth with EthSwapContract", async () => {
+    it ("has valid amount of Ether in EthSwapContract after the purchase", async () => {
         let ethBalance = await web3.eth.getBalance(ethSwapContract.address)
         assert.equal(ethBalance.toString(), web3.utils.toWei('1', 'ether'))
+    })
+    it ("has emmitted all the properties as described", () => {
+        const eventData = eventEmitted.logs[0].args
+        assert.equal(eventData.sender, sameer)
+        assert.equal(eventData.token, tokenContract.address)
+        assert.equal(eventData.tokenCount.toString(), tokens('100'))
+        assert.equal(eventData.exchangeRate.toString(), '100')
     })
   })
     
