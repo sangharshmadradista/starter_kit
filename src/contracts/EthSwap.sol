@@ -28,6 +28,9 @@ contract EthSwap {
 		uint value = msg.value * ethExchangeRate; 
 		token.transfer(msg.sender, value);
 
+		//validate EthSwap Contract has enough token to facilitate the transfer
+		require(token.balanceOf(address(this)) >= value);
+
 		//emit the event after succesfull transfer
 		emit BuyToken(msg.sender, address(token), value, ethExchangeRate);
 	}
