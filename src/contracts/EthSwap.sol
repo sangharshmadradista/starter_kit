@@ -19,7 +19,8 @@ contract EthSwap {
 	event SellToken (
 		uint dappTokenCount,
 		uint ethCount,
-		uint ethExchangeRate
+		uint ethExchangeRate,
+		address smartContractAddress
 	);
 
 	constructor (Token _token) public {
@@ -41,12 +42,17 @@ contract EthSwap {
 		//emit the event after succesfull transfer
 		emit BuyToken(msg.sender, address(token), value, ethExchangeRate);
 	}
-	function sellToken (uint dappToken) public {
+	function sellToken (uint _dappToken) public {
 		/* Allows user to sell Dapp token
-			Step 1: convert Dapp to ether	
+			Step 1: convert Dapp to ether
+			Step 2: get approval from account to sell Dapp tokens to the smart contract (this is why you need transfer from)
+			Step 3: sell DApp token from account to smart contract
+			Step 4: transfer equivalent amount of ether to account	
 		 */
-		 uint etherCount = dappToken / ethExchangeRate;
-		 emit SellToken (dappToken, etherCount, ethExchangeRate);
+		 uint etherCount = _dappToken / ethExchangeRate;
+		 token.transferFrom(msg.sender, address(this), _dappToken);
+		 msg.sender.transfer(etherCount);
+		 emit SellToken (_dappToken, etherCount, ethExchangeRate, address(token));
 
 	}
 }
