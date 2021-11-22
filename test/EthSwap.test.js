@@ -10,10 +10,11 @@ function tokens(n){
     return web3.utils.toWei(n, 'ether')
 }
 contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will be refrence to first ganache account and so on
-    let ethSwapContract, tokenContract
+    let ethSwapContract, tokenContract, ethExchangeRate
     before( async () => {
     tokenContract = await Token.new()
     ethSwapContract = await EthSwap.new(tokenContract.address)
+    ethExchangeRate = '100'
     await tokenContract.transfer(ethSwapContract.address,'1000000000000000000000000')
     })
   it ('is not null', async () => {
@@ -23,7 +24,8 @@ contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will 
       const contractName =  await ethSwapContract.name()
       assert.equal(contractName, 'Eth Swap Finance')
   })
-  describe ('function buyToken(): to purchase DApp token from EthSwap Contract with Ether ', async () => {
+  describe (
+      'function buyToken(): to purchase DApp token from EthSwap Contract with Ether ', async () => {
       let etherCount, dappCountPerEth, initalDappCount,eventEmitted
      before (async () => {
         etherCount = '1'
@@ -53,9 +55,22 @@ contract ('EthSwap Contract',  ( [sangharsh , sameer] ) => { // first name will 
         assert.equal(eventData.sender, sameer)
         assert.equal(eventData.token, tokenContract.address)
         assert.equal(eventData.tokenCount.toString(), tokens('100'))
-        assert.equal(eventData.exchangeRate.toString(), '100')
+        assert.equal(eventData.ethExchangeRate.toString(), ethExchangeRate)
     })
+  })  
+  describe ("function sellToken(): To sell DappToken to EthSwap Contract for Ether", async () => {
+      let dappCount, eventEmitted, etherCount
+    before (async () => {
+        dappCount = '100'
+        etherCount = '1'
+        eventEmitted = await ethSwapContract.sellToken(tokens(dappCount))
+    })
+    it ("has emmitted all the properties as described", async () => {
+        const eventData = eventEmitted.logs[0].args
+        assert.equal(eventData.dappTokenCount.toString(), tokens(dappCount))
+        assert.equal(eventData.ethCount.toString(),tokens(etherCount))
+        assert.equal(eventData.ethExchangeRate.toString(), ethExchangeRate)
+    }) 
   })
-    
 })
 
