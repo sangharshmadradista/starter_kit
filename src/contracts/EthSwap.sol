@@ -13,8 +13,15 @@ contract EthSwap {
 		address sender,
 		address token, 
 		uint tokenCount, 
-		uint exchangeRate
+		uint ethExchangeRate
 	); 
+
+	event SellToken (
+		uint dappTokenCount,
+		uint ethCount,
+		uint ethExchangeRate,
+		address smartContractAddress
+	);
 
 	constructor (Token _token) public {
 		token = _token;
@@ -26,13 +33,30 @@ contract EthSwap {
 	 */
 	function buyToken () public payable {
 		uint value = msg.value * ethExchangeRate; 
-		token.transfer(msg.sender, value);
-
+		
 		//validate EthSwap Contract has enough token to facilitate the transfer
 		require(token.balanceOf(address(this)) >= value);
 
+		token.transfer(msg.sender, value);
+
 		//emit the event after succesfull transfer
 		emit BuyToken(msg.sender, address(token), value, ethExchangeRate);
+	}
+	function sellToken (uint _dappToken) public {
+		/* Allows user to sell Dapp token
+			Step 1: convert Dapp to ether
+			Step 2: validate contract has enough ether amount
+			Step 3: get approval from account to sell Dapp tokens to the smart contract (this is why you need transfer from)
+			Step 4: sell DApp token from account to smart contract
+			Step 5: transfer equivalent amount of ether to account	
+		 */
+		 require (token.balanceOf(msg.sender) >= _dappToken);
+		 uint etherCount = _dappToken / ethExchangeRate;
+		 require(address(this).balance >= etherCount);
+		 token.transferFrom(msg.sender, address(this), _dappToken);
+		 msg.sender.transfer(etherCount);
+		 emit SellToken (_dappToken, etherCount, ethExchangeRate, address(token));
+
 	}
 }
 
