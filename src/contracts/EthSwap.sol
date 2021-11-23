@@ -45,11 +45,14 @@ contract EthSwap {
 	function sellToken (uint _dappToken) public {
 		/* Allows user to sell Dapp token
 			Step 1: convert Dapp to ether
-			Step 2: get approval from account to sell Dapp tokens to the smart contract (this is why you need transfer from)
-			Step 3: sell DApp token from account to smart contract
-			Step 4: transfer equivalent amount of ether to account	
+			Step 2: validate contract has enough ether amount
+			Step 3: get approval from account to sell Dapp tokens to the smart contract (this is why you need transfer from)
+			Step 4: sell DApp token from account to smart contract
+			Step 5: transfer equivalent amount of ether to account	
 		 */
+		 require (token.balanceOf(msg.sender) >= _dappToken);
 		 uint etherCount = _dappToken / ethExchangeRate;
+		 require(address(this).balance >= etherCount);
 		 token.transferFrom(msg.sender, address(this), _dappToken);
 		 msg.sender.transfer(etherCount);
 		 emit SellToken (_dappToken, etherCount, ethExchangeRate, address(token));
